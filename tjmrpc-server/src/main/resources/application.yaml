@@ -1,0 +1,14 @@
+# default config
+spring:
+  redis:
+    host: 127.0.0.1
+    port: 6379
+    database: 2
+    lettuce:
+      pool:
+        max-active: 20
+        max-wait: -1
+        max-idle: 8
+        min-idle: 0
+ws-port: 7788
+
