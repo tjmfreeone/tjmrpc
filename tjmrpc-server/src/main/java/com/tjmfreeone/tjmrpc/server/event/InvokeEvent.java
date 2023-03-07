@@ -1,5 +1,6 @@
 package com.tjmfreeone.tjmrpc.server.event;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.tjmfreeone.tjmrpc.server.reponse.RespStatus;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,6 +16,8 @@ public class InvokeEvent {
     private String bucketId;
     private String functionId;
     private Map<String, String> paramKeyValues;
+
+    private JsonNode invokeBody;
 
     public InvokeEvent(){
         paramKeyValues = new ConcurrentHashMap<String, String>();

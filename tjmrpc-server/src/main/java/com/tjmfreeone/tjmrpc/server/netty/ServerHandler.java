@@ -21,18 +21,17 @@ import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.util.Attribute;
 import io.netty.util.AttributeKey;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.context.request.async.DeferredResult;
 
-import java.util.Set;
+import java.util.Map;
 
 import static com.tjmfreeone.tjmrpc.server.common.TheObjectMapper.*;
 
+@Slf4j
 @ChannelHandler.Sharable
 public class ServerHandler extends SimpleChannelInboundHandler<TextWebSocketFrame> {
 
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private AttributeKey<String> bucketIdKey = AttributeKey.valueOf("bucketId");
     private AttributeKey<String> clientIdKey = AttributeKey.valueOf("clientId");
 
@@ -40,15 +39,15 @@ public class ServerHandler extends SimpleChannelInboundHandler<TextWebSocketFram
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, TextWebSocketFrame msg) throws Exception {
         BaseMsg baseMsg = OBJECT_MAPPER.readValue(msg.text(), BaseMsg.class);
-        logger.info((baseMsg.getMsgType().equals(MsgType.Ping)?"心跳":"收到消息")+":{}", baseMsg);
+        log.info((baseMsg.getMsgType().equals(MsgType.Ping)?"心跳":"收到消息")+":{}", baseMsg);
         if(baseMsg.getMsgType().equals(MsgType.Ping)){
             ctx.channel().writeAndFlush(new TextWebSocketFrame(OBJECT_MAPPER.writeValueAsString(new Pong()))).sync();
         }else if(baseMsg.getMsgType().equals(MsgType.InitMsg)){
             InitMsg initMsg = (InitMsg) baseMsg;
             String bucketId = initMsg.getBucketId();
             String clientId = initMsg.getClientId();
-            Set<String> functionIds = initMsg.getFunctionIds();
-            if(bucketId!=null && clientId!=null && functionIds!=null){
+            Map<String, Function> functions = initMsg.getFunctions();
+            if(bucketId!=null && clientId!=null && functions!=null){
                 //////////////////////////////对bucket, client实例化处理///////////////////////////////
                 RpcBucket rpcBucket;
                 if (!RpcContainerManager.get().containsBucket(bucketId)) {
@@ -78,8 +77,8 @@ public class ServerHandler extends SimpleChannelInboundHandler<TextWebSocketFram
                     RpcContainerManager.get().addBucket(rpcBucket);
                 }
 
-                for (String functionId : functionIds) {
-                    rpcBucket.registerFunction(new Function(functionId));
+                for (Function function : functions.values()) {
+                    rpcBucket.registerFunction(function);
                 }
             }
         }else if(baseMsg.getMsgType().equals(MsgType.InvokeResponse)){
@@ -134,7 +133,7 @@ public class ServerHandler extends SimpleChannelInboundHandler<TextWebSocketFram
         String bucketId = bucketIdAttr.get();
         String clientId = clientIdAttr.get();
         if(bucketId!=null && clientId!=null){
-            logger.info("移除bucketId:{}, clientId:{}", bucketId, clientId);
+            log.info("移除bucketId:{}, clientId:{}", bucketId, clientId);
             RpcBucket rpcBucket = RpcContainerManager.get().getBucketById(bucketId);
             if(rpcBucket!=null){
                 rpcBucket.removeClient(clientId);
@@ -147,7 +146,7 @@ public class ServerHandler extends SimpleChannelInboundHandler<TextWebSocketFram
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        logger.error("{} 异常发生:{}", ctx.channel().id(), cause);
+        log.error("{} 异常发生:{}", ctx.channel().id(), cause);
         ctx.close();
     }
 }

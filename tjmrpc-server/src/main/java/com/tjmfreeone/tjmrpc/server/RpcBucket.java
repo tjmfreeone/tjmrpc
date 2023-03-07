@@ -19,7 +19,7 @@ public class RpcBucket {
     public RpcBucket(String bucketId){
         this.bucketId = bucketId;
         this.clientMap = new ConcurrentHashMap<>();
-        this.functions = new ConcurrentHashMap<>();
+        this.functions = new ConcurrentHashMap<String, Function>();
     }
 
     public void addClient(RpcClient rpcClient){
@@ -56,6 +56,10 @@ public class RpcBucket {
 
     public void registerFunction(Function function){
         functions.put(function.getFunctionId(), function);
+    }
+
+    public Function getFunction(String functionId){
+        return functions.getOrDefault(functionId, null);
     }
 
     public boolean containsFunction(String functionId){

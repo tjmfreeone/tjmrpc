@@ -59,7 +59,7 @@ public class Client {
                     pipeline.addLast(new WebSocketClientProtocolHandler(WebSocketClientHandshakerFactory.newHandshaker(
                             uri, WebSocketVersion.V13, null, false, new DefaultHttpHeaders()
                     )));
-                    pipeline.addLast(new IdleStateHandler(0, 4,0, TimeUnit.SECONDS));
+                    pipeline.addLast(new IdleStateHandler(0, 8,0, TimeUnit.SECONDS));
                     pipeline.addLast(new ClientHandler());
                 }
             });

@@ -4,10 +4,15 @@ import lombok.*;
 
 @Data
 @Getter
+@Setter
 @AllArgsConstructor
+@NoArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-public class Function {
+public class Function{
 
     @EqualsAndHashCode.Include()
     private String functionId;
+
+    @EqualsAndHashCode.Include()
+    private String requestMethod;
 }

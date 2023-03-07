@@ -83,8 +83,7 @@ public class RpcClientService {
         InitMsg initMsg = new InitMsg();
         initMsg.setBucketId(bucketId);
         initMsg.setClientId(clientId);
-        HashSet<String> functionIds = new HashSet<String>(functions.keySet());
-        initMsg.setFunctionIds(functionIds);
+        initMsg.setFunctions(functions);
         log.info(initMsg.toString());
         ChannelFuture channelFuture = channel.writeAndFlush(new TextWebSocketFrame(OBJECT_MAPPER.writeValueAsString(initMsg)));
         channelFuture.sync();

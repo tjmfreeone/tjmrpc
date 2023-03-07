@@ -1,5 +1,6 @@
 package com.tjmfreeone.tjmrpc.client.message.recv;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.tjmfreeone.tjmrpc.client.message.BaseMsg;
 import com.tjmfreeone.tjmrpc.client.message.MsgType;
 
@@ -25,6 +26,8 @@ public class InvokeRequest extends BaseMsg {
     private String requestId;
 
     private Map<String, String> paramKeyValues;
+
+    private JsonNode invokeBody;
 
     public InvokeRequest() {
         paramKeyValues = new ConcurrentHashMap<String, String>();

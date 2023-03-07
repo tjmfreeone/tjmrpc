@@ -1,13 +1,14 @@
 package com.tjmfreeone.tjmrpc.server.message.recv;
 
+import com.tjmfreeone.tjmrpc.server.common.Function;
 import com.tjmfreeone.tjmrpc.server.message.BaseMsg;
 import com.tjmfreeone.tjmrpc.server.message.MsgType;
 import lombok.Data;
 import lombok.Getter;
 import lombok.ToString;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 
 @Data
 @Getter
@@ -16,17 +17,17 @@ public class InitMsg extends BaseMsg {
     private final MsgType msgType = MsgType.InitMsg;
     private String clientId;
     private String bucketId;
-    private Set<String> functionIds;
+    private Map<String, Function> functions;
 
     public InitMsg(){
-        functionIds = new HashSet<String>();
+        functions = new HashMap<>();
     }
 
-    public void addFunctionId(String functionId){
-        functionIds.add(functionId);
+    public void addFunctionId(Function function){
+        functions.put(function.getFunctionId(), function);
     }
 
-    public void removeFunctionId(String functionId){
-        functionIds.remove(functionId);
+    public void removeFunction(String functionId){
+        functions.remove(functionId);
     }
 }

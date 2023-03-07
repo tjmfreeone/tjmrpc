@@ -54,7 +54,7 @@ public class ClientHandler extends SimpleChannelInboundHandler<TextWebSocketFram
                     try {
                         targetFunction.onInvoke(invokeRequest, invokeResponse);
                     } catch (Exception e){
-                        invokeResponse.setFail(e.getStackTrace());
+                        invokeResponse.setFail(e);
                     }
                     RpcClientService.get().getChannel().writeAndFlush(new TextWebSocketFrame(OBJECT_MAPPER.writeValueAsString(invokeResponse))).sync();
 

@@ -28,6 +28,7 @@ public class TheObjectMapper {
         OBJECT_MAPPER.addMixIn(BaseMsg.class, Pong.class);
         OBJECT_MAPPER.addMixIn(BaseMsg.class, InvokeRequest.class);
         OBJECT_MAPPER.addMixIn(BaseMsg.class, InvokeResponse.class);
+
     }
 
 }

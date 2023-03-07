@@ -1,9 +1,7 @@
 package com.tjmfreeone.tjmrpc.client.common;
 
 import com.tjmfreeone.tjmrpc.client.message.recv.InvokeRequest;
-import com.tjmfreeone.tjmrpc.client.message.send.InvokeResponse;
 import lombok.*;
-import org.jdeferred2.impl.DeferredObject;
 
 @Data
 @Setter
@@ -15,6 +13,14 @@ public abstract class FunctionDeferred implements Function{
     @EqualsAndHashCode.Include()
     @NonNull
     private String functionId;
+
+    @EqualsAndHashCode.Include()
+    @NonNull
+    private String requestMethod = "GET";
+
+    public FunctionDeferred(String functionId){
+        this.functionId = functionId;
+    }
 
 
     public abstract void invokeAndGetDeferredResult(InvokeRequest request) throws Exception;

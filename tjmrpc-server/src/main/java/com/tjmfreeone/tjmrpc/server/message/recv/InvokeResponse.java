@@ -8,10 +8,19 @@ import lombok.ToString;
 
 @Data
 @Getter
-@ToString
 public class InvokeResponse extends BaseMsg {
     private final MsgType msgType = MsgType.InvokeResponse;
     private String requestId;
     private Object rawData;
     private String status;
+
+    @Override
+    public String toString() {
+        return "InvokeResponse(" +
+                "msgType=" + msgType +
+                ", requestId='" + requestId + '\'' +
+                ", rawData=" + rawData.toString().substring(0, 64) + "..." +
+                ", status='" + status + '\'' +
+                ')';
+    }
 }

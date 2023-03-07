@@ -1,14 +1,8 @@
+import com.fasterxml.jackson.databind.JsonNode;
 import com.tjmfreeone.tjmrpc.client.RpcClientService;
-import com.tjmfreeone.tjmrpc.client.common.DeferredTask;
-import com.tjmfreeone.tjmrpc.client.common.DeferredTaskManager;
-import com.tjmfreeone.tjmrpc.client.common.FunctionDeferred;
-import com.tjmfreeone.tjmrpc.client.common.FunctionReact;
-import com.tjmfreeone.tjmrpc.client.message.BaseMsg;
+import com.tjmfreeone.tjmrpc.client.common.*;
 import com.tjmfreeone.tjmrpc.client.message.recv.InvokeRequest;
-import com.tjmfreeone.tjmrpc.client.message.recv.Pong;
-import com.tjmfreeone.tjmrpc.client.message.send.InitMsg;
 import com.tjmfreeone.tjmrpc.client.message.send.InvokeResponse;
-import com.tjmfreeone.tjmrpc.client.message.send.Ping;
 
 import java.util.UUID;
 
@@ -19,19 +13,17 @@ public class TestClazz {
         RpcClientService.get().setBucketId("appExample");
         RpcClientService.get().setClientId(UUID.randomUUID().toString());
 
-        RpcClientService.get().registerFunction(new FunctionReact("getSign") {
+        RpcClientService.get().registerFunction(new FunctionReact("getSign", "GET") {
             @Override
             public void onInvoke(InvokeRequest request, InvokeResponse response) throws Exception{
                 String result = "";
-                for(String paramKey : request.getParamKeyValues().keySet()){
-                    result += paramKey+"="+request.getParamKeyValues().get(paramKey) + "&";
-                }
+//                JsonNode invokeBody = request.getInvokeBody();
+                result += request.getParamKeyValues().get("data");
 
                 response.setSuccess(result);
             }
         });
-        RpcClientService.get().registerFunction(new FunctionDeferred("getSign2") {
-
+        RpcClientService.get().registerFunction(new FunctionDeferred("getSign2", "GET") {
             @Override
             public void invokeAndGetDeferredResult(InvokeRequest request) throws Exception {
                 System.out.println("异步调用了");

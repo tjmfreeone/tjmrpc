@@ -1,5 +1,6 @@
 package com.tjmfreeone.tjmrpc.server.Listener;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.tjmfreeone.tjmrpc.server.RpcClient;
 import com.tjmfreeone.tjmrpc.server.RpcContainerManager;
 import com.tjmfreeone.tjmrpc.server.DeferredRequestManager;
@@ -10,8 +11,7 @@ import com.tjmfreeone.tjmrpc.server.reponse.RespStatus;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableAsync;
@@ -24,10 +24,10 @@ import java.util.UUID;
 
 import static com.tjmfreeone.tjmrpc.server.common.TheObjectMapper.OBJECT_MAPPER;
 
+@Slf4j
 @Component
 @EnableAsync
 public class InvokeEventListener {
-    static Logger logger = LoggerFactory.getLogger(InvokeEventListener.class);
 
     @EventListener
     @Async
@@ -36,6 +36,8 @@ public class InvokeEventListener {
         String bucketId = invokeEvent.getBucketId();
         String functionId = invokeEvent.getFunctionId();
         Map<String, String> paramKeyValues = invokeEvent.getParamKeyValues();
+        JsonNode invokeBody = invokeEvent.getInvokeBody();
+        log.info("invokeBody:"+invokeBody);
 
         if(!RpcContainerManager.get().containsBucket(bucketId)){
             deferredResult.setResult(new RespError("no such bucketId"));
@@ -45,6 +47,12 @@ public class InvokeEventListener {
             deferredResult.setResult(new RespError("no such functionId in bucket " + bucketId));
             return;
         }
+
+        if(RpcContainerManager.get().getBucketById(bucketId).getFunction(functionId).getRequestMethod().equals("POST") && invokeBody==null){
+            deferredResult.setResult(new RespError("found post body equals to null, please retry."));
+            return;
+        }
+
         if(RpcContainerManager.get().getBucketById(bucketId).clientCount()==0){
             deferredResult.setResult(new RespError("no client online in bucket " + bucketId));
             return;
@@ -58,6 +66,7 @@ public class InvokeEventListener {
         invokeRequest.setClientId(rpcClient.getClientId());
         invokeRequest.setFunctionId(functionId);
         invokeRequest.setParamKeyValues(paramKeyValues);
+        invokeRequest.setInvokeBody(invokeEvent.getInvokeBody());
 
         ChannelFuture channelFuture = rpcClient.getChannel().writeAndFlush(new TextWebSocketFrame(OBJECT_MAPPER.writeValueAsString(invokeRequest)));
 

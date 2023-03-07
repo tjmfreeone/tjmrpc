@@ -3,8 +3,7 @@
 //
 package com.tjmfreeone.tjmrpc.server;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,8 +11,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 
 
+@Slf4j
 public class RpcContainerManager {
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private static volatile RpcContainerManager INSTANCE; // volatile防止指令排
     private static volatile ConcurrentHashMap<String, RpcBucket> RpcBucketMap;
 

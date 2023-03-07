@@ -31,4 +31,14 @@ public class InvokeResponse extends BaseMsg {
         status = "fail";
     }
 
+    @Override
+    public String toString() {
+        return "InvokeResponse(" +
+                "msgType=" + msgType +
+                ", requestId='" + requestId + '\'' +
+                ", rawData=" + rawData.toString().substring(0, 64) + "..." +
+                ", status='" + status + '\'' +
+                ')';
+    }
+
 }
