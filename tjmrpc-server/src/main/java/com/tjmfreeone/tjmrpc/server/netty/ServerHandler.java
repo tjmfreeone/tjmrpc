@@ -86,7 +86,6 @@ public class ServerHandler extends SimpleChannelInboundHandler<TextWebSocketFram
             String requestId = invokeResult.getRequestId();
             Attribute<String> clientIdAttr = ctx.channel().attr(clientIdKey);
             String clientId = clientIdAttr.get();
-            Object raw_obj;
             if(DeferredRequestManager.get().hasRequestId(requestId)){
                 DeferredResult<RespStatus> deferredResult = DeferredRequestManager.get().pop(requestId);
                 if(deferredResult==null)return;

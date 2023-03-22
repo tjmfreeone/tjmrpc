@@ -3,10 +3,9 @@ package com.tjmfreeone.tjmrpc.client.netty;
 import com.tjmfreeone.tjmrpc.client.RpcClientService;
 
 import java.net.URI;
-import java.util.Optional;
-import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import com.tjmfreeone.tjmrpc.client.connection.ConnStatus;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -17,21 +16,17 @@ import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.websocketx.WebSocketClientHandshakerFactory;
 import io.netty.handler.codec.http.websocketx.WebSocketClientProtocolHandler;
 import io.netty.handler.codec.http.websocketx.WebSocketVersion;
-import io.netty.handler.codec.http.websocketx.extensions.compression.WebSocketClientCompressionHandler;
-import io.netty.handler.logging.LogLevel;
-import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.stream.ChunkedWriteHandler;
 import io.netty.handler.timeout.IdleStateHandler;
-import io.netty.util.concurrent.Future;
-import io.netty.util.concurrent.GenericFutureListener;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @Slf4j
 public class Client {
 
-    public static NioEventLoopGroup worker =  new NioEventLoopGroup();
+    public static NioEventLoopGroup worker;
     private static Bootstrap bootstrap;
 
     private static ChannelFuture channelFuture;
@@ -39,11 +34,13 @@ public class Client {
     private static String host = RpcClientService.get().getHost();
     private static int port = RpcClientService.get().getPort();
 
-    public final static int DELAY = 5;
-
+    @Setter
+    @Getter
+    public static long DELAY = 5000L;
 
     public static void spawn(URI uri){
         try{
+            worker = new NioEventLoopGroup();
             bootstrap = new Bootstrap();
             bootstrap.channel(NioSocketChannel.class);
             bootstrap.group(worker);
@@ -59,7 +56,7 @@ public class Client {
                     pipeline.addLast(new WebSocketClientProtocolHandler(WebSocketClientHandshakerFactory.newHandshaker(
                             uri, WebSocketVersion.V13, null, false, new DefaultHttpHeaders()
                     )));
-                    pipeline.addLast(new IdleStateHandler(0, 8,0, TimeUnit.SECONDS));
+                    pipeline.addLast(new IdleStateHandler(1, 8,0, TimeUnit.SECONDS));
                     pipeline.addLast(new ClientHandler());
                 }
             });
@@ -74,11 +71,18 @@ public class Client {
 
     public static void connect() throws Exception {
         Client.worker.scheduleWithFixedDelay(new Runnable() {
+            @SneakyThrows
             @Override
             public void run() {
-                if(channelFuture!=null&&channelFuture.channel().isActive())
-                    return;
+                if(channelFuture!=null){
+                    if(channelFuture.channel().isActive())
+                        return;
+                    channelFuture.channel().close().sync();
+                    channelFuture = null;
+                }
+
                 log.info("开始连接:"+host+":"+port+" ...");
+                RpcClientService.get().setConnStatus(ConnStatus.CONNECTING);
                 try {
                     channelFuture = bootstrap.connect(host, port).addListener(new ChannelFutureListener() {
                         @Override
@@ -86,8 +90,9 @@ public class Client {
                             if(future.isSuccess()){
                                 log.info("连接成功！");
                                 RpcClientService.get().setChannel(channelFuture.channel());
+                                RpcClientService.get().setConnStatus(ConnStatus.ON_LINE);
                             } else {
-                                log.warn("连接失败, "+Client.DELAY+"s后重试");
+                                log.warn("连接失败, "+Client.DELAY+"ms后重试");
                             }
                         }
                     });
@@ -95,7 +100,11 @@ public class Client {
                     throw new RuntimeException(e);
                 }
             }
-        }, 0, Client.DELAY, TimeUnit.SECONDS);
+        }, 0, Client.DELAY, TimeUnit.MILLISECONDS);
 
+    }
+
+    public static void stop(){
+        worker.shutdownGracefully();
     }
 }

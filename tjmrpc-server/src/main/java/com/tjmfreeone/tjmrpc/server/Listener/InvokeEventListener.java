@@ -1,9 +1,11 @@
 package com.tjmfreeone.tjmrpc.server.Listener;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.tjmfreeone.tjmrpc.server.RpcBucket;
 import com.tjmfreeone.tjmrpc.server.RpcClient;
 import com.tjmfreeone.tjmrpc.server.RpcContainerManager;
 import com.tjmfreeone.tjmrpc.server.DeferredRequestManager;
+import com.tjmfreeone.tjmrpc.server.common.ReqMethod;
 import com.tjmfreeone.tjmrpc.server.event.InvokeEvent;
 import com.tjmfreeone.tjmrpc.server.message.send.InvokeRequest;
 import com.tjmfreeone.tjmrpc.server.reponse.RespError;
@@ -35,9 +37,9 @@ public class InvokeEventListener {
         DeferredResult<RespStatus> deferredResult = invokeEvent.getDeferredResult();
         String bucketId = invokeEvent.getBucketId();
         String functionId = invokeEvent.getFunctionId();
+        String clientId = invokeEvent.getClientId();
         Map<String, String> paramKeyValues = invokeEvent.getParamKeyValues();
         JsonNode invokeBody = invokeEvent.getInvokeBody();
-        log.info("invokeBody:"+invokeBody);
 
         if(!RpcContainerManager.get().containsBucket(bucketId)){
             deferredResult.setResult(new RespError("no such bucketId"));
@@ -48,7 +50,7 @@ public class InvokeEventListener {
             return;
         }
 
-        if(RpcContainerManager.get().getBucketById(bucketId).getFunction(functionId).getRequestMethod().equals("POST") && invokeBody==null){
+        if(RpcContainerManager.get().getBucketById(bucketId).getFunction(functionId).getReqMethod().equals(ReqMethod.POST) && invokeBody==null){
             deferredResult.setResult(new RespError("found post body equals to null, please retry."));
             return;
         }
@@ -58,7 +60,12 @@ public class InvokeEventListener {
             return;
         }
 
-        RpcClient rpcClient = RpcContainerManager.get().getBucketById(bucketId).loopGetRpcClient();
+        RpcBucket rpcBucket = RpcContainerManager.get().getBucketById(bucketId);
+        RpcClient rpcClient = clientId!=null? rpcBucket.getTargetRpcClient(clientId): rpcBucket.loopGetRpcClient();
+        if(rpcClient==null){
+            deferredResult.setResult(new RespError("client not found."));
+            return;
+        }
         String requestId = UUID.randomUUID().toString();
         InvokeRequest invokeRequest = new InvokeRequest();
         invokeRequest.setRequestId(requestId);

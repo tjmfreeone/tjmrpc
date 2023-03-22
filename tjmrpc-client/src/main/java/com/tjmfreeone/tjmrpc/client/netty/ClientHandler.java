@@ -15,8 +15,6 @@ import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 
 import static com.tjmfreeone.tjmrpc.client.common.TheObjectMapper.*;
@@ -32,7 +30,7 @@ public class ClientHandler extends SimpleChannelInboundHandler<TextWebSocketFram
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        RpcClientService.hasInited = false;
+        RpcClientService.get().hasInited = false;
         Client.connect();
     }
 
@@ -54,7 +52,7 @@ public class ClientHandler extends SimpleChannelInboundHandler<TextWebSocketFram
                     try {
                         targetFunction.onInvoke(invokeRequest, invokeResponse);
                     } catch (Exception e){
-                        invokeResponse.setFail(e);
+                        invokeResponse.setFail(e.toString());
                     }
                     RpcClientService.get().getChannel().writeAndFlush(new TextWebSocketFrame(OBJECT_MAPPER.writeValueAsString(invokeResponse))).sync();
 
@@ -85,13 +83,12 @@ public class ClientHandler extends SimpleChannelInboundHandler<TextWebSocketFram
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
         if(evt instanceof IdleStateEvent){
             IdleStateEvent idleStateEvent = (IdleStateEvent) evt;
-            if(!RpcClientService.hasInited){
+            if(IdleState.READER_IDLE.equals(idleStateEvent.state()) && !RpcClientService.get().hasInited){
                 RpcClientService.get().sendInitMsg();
             }
             if(IdleState.WRITER_IDLE.equals(idleStateEvent.state())){
                 Ping ping = new Ping();
                 ping.setClientId(RpcClientService.get().getClientId());
-
                 ctx.channel().writeAndFlush(new TextWebSocketFrame(OBJECT_MAPPER.writeValueAsString(ping))).sync();
             }
         } else {

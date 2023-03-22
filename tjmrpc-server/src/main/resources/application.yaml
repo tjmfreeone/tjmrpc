@@ -12,3 +12,39 @@ spring:
         min-idle: 0
 ws-port: 7788
 
+knife4j:
+  enable: true
+  documents:
+    -
+      group: 2.X版本
+      name: 接口签名
+      locations: classpath:sign/*
+  setting:
+    language: zh-CN
+    enable-swagger-models: false
+    enable-document-manage: false
+    swagger-model-name: 实体类列表
+    enable-version: false
+    enable-reload-cache-parameter: false
+    enable-after-script: true
+    enable-filter-multipart-api-method-type: POST
+    enable-filter-multipart-apis: false
+    enable-request-cache: true
+    enable-host: false
+    enable-host-text: 192.168.0.193:8000
+    enable-home-custom: true
+    home-custom-path: classpath:markdown/home.md
+    enable-search: false
+    enable-footer: false
+    enable-footer-custom: false
+    footer-custom-content: default
+    enable-dynamic-parameter: false
+    enable-debug: true
+    enable-open-api: false
+    enable-group: true
+  cors: false
+  production: false
+  basic:
+    enable: false
+    username: test
+    password: 12313

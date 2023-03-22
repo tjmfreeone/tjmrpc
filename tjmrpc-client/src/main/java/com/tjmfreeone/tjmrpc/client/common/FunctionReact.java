@@ -18,7 +18,7 @@ public abstract class FunctionReact implements Function{
 
     @EqualsAndHashCode.Include()
     @NonNull
-    private String requestMethod = "GET";
+    private ReqMethod reqMethod = ReqMethod.GET;
 
     public FunctionReact(String functionId){
         this.functionId = functionId;

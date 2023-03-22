@@ -14,5 +14,5 @@ public class Function{
     private String functionId;
 
     @EqualsAndHashCode.Include()
-    private String requestMethod;
+    private ReqMethod reqMethod;
 }

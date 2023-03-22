@@ -55,5 +55,9 @@ public class DeferredTask {
 
     }
 
+    public boolean isFinished(){
+        return deferredObject.isRejected() || deferredObject.isResolved();
+    }
+
 
 }

@@ -33,10 +33,17 @@ public class InvokeResponse extends BaseMsg {
 
     @Override
     public String toString() {
+        String show_data;
+        if(rawData.toString().length() > 64)
+        {
+            show_data = rawData.toString().substring(0, 64) + "...";
+        }else{
+            show_data = rawData.toString();
+        }
         return "InvokeResponse(" +
                 "msgType=" + msgType +
                 ", requestId='" + requestId + '\'' +
-                ", rawData=" + rawData.toString().substring(0, 64) + "..." +
+                ", rawData=" + show_data +
                 ", status='" + status + '\'' +
                 ')';
     }

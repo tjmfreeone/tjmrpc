@@ -38,7 +38,7 @@ public class Server {
                     ch.pipeline().addLast(new HttpObjectAggregator(65535));
                     ch.pipeline().addLast(new WebSocketServerCompressionHandler());
 
-                    ch.pipeline().addLast(new WebSocketServerProtocolHandler("/tjmrpc/websocket", null, false, 65536 * 4));
+                    ch.pipeline().addLast(new WebSocketServerProtocolHandler("/tjmrpc/websocket", null, false, 65536 * 20));
                     ch.pipeline().addLast(new IdleStateHandler(10, 0, 0, TimeUnit.SECONDS));
                     ch.pipeline().addLast(new ServerHandler());
                 }

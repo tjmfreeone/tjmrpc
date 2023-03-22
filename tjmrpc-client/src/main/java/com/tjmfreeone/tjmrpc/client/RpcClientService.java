@@ -1,11 +1,14 @@
 package com.tjmfreeone.tjmrpc.client;
 
+import com.tjmfreeone.tjmrpc.client.connection.ConnStatus;
 import com.tjmfreeone.tjmrpc.client.common.Function;
+import com.tjmfreeone.tjmrpc.client.connection.IConnStatusListener;
 import com.tjmfreeone.tjmrpc.client.message.send.InitMsg;
 import com.tjmfreeone.tjmrpc.client.netty.Client;
 
 import java.net.URI;
-import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -38,10 +41,15 @@ public class RpcClientService {
     @NonNull
     private Channel channel;
 
+    @Getter
+    private ConnStatus connStatus;
+
+    private List<IConnStatusListener> connStatusListeners = new LinkedList<>();
+
     @NonNull
     private static volatile Map<String, Function> functions;
 
-    public static boolean hasInited = false;
+    public boolean hasInited = false;
 
     private RpcClientService(){
         if(INSTANCE!=null){
@@ -62,8 +70,9 @@ public class RpcClientService {
     }
 
 
-    public void registerFunction(Function function) throws Exception {
+    public void registerFunction(Function function){
         functions.put(function.getFunctionId(), function);
+        this.hasInited = false;
     }
 
     public void unregisterFunction(Function function){
@@ -74,7 +83,30 @@ public class RpcClientService {
         return functions.getOrDefault(functionId, null);
     }
 
-    public void start_connect() throws InterruptedException {
+    public void setSchedulerDelay(long scheduler_delay){
+        if(scheduler_delay>0) {
+            Client.setDELAY(scheduler_delay);
+        }
+    }
+
+    public void addConnStatusListener(IConnStatusListener listener){
+        if(!connStatusListeners.contains(listener)){
+            connStatusListeners.add(listener);
+        }
+    }
+
+    public void setConnStatus(ConnStatus status){
+        this.connStatus = status;
+        notifyStatus(status);
+    }
+
+    public void notifyStatus(ConnStatus status){
+        for(IConnStatusListener listener: connStatusListeners){
+            listener.onStatusChange(status);
+        }
+    }
+
+    public void start_connect(){
         URI uri = URI.create("ws://" + host + ":" + port + "/tjmrpc/websocket");
         Client.spawn(uri);
     }
@@ -94,6 +126,17 @@ public class RpcClientService {
                 hasInited = true;
             }
         });
+    }
+
+    public void close(){
+        try {
+            channel.close().sync();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        Client.stop();
+        hasInited = false;
+        this.setConnStatus(ConnStatus.OFF_LINE);
     }
 
 }

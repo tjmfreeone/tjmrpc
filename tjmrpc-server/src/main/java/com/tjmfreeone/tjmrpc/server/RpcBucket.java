@@ -54,6 +54,10 @@ public class RpcBucket {
         return clientMap.get(clientId);
     }
 
+    public RpcClient getTargetRpcClient(String clientId){
+        return clientMap.getOrDefault(clientId, null);
+    }
+
     public void registerFunction(Function function){
         functions.put(function.getFunctionId(), function);
     }

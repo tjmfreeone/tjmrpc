@@ -16,7 +16,7 @@ public abstract class FunctionDeferred implements Function{
 
     @EqualsAndHashCode.Include()
     @NonNull
-    private String requestMethod = "GET";
+    private ReqMethod reqMethod = ReqMethod.GET;
 
     public FunctionDeferred(String functionId){
         this.functionId = functionId;

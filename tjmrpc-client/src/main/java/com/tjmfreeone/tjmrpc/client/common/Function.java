@@ -5,9 +5,9 @@ public interface Function {
 
     String functionId = null;
 
-    String requestMethod = null;
+    ReqMethod REQ_METHOD = null;
 
      String getFunctionId();
 
-     String getRequestMethod();
+     ReqMethod getReqMethod();
 }

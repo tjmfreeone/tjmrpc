@@ -15,6 +15,9 @@ public class InvokeEvent {
     private DeferredResult<RespStatus> deferredResult;
     private String bucketId;
     private String functionId;
+
+    private String clientId;
+
     private Map<String, String> paramKeyValues;
 
     private JsonNode invokeBody;
