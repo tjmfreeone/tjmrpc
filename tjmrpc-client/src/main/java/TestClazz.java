@@ -8,11 +8,11 @@ import java.util.UUID;
 
 public class TestClazz {
     public static void main(String[] args) throws Exception {
-        RpcClientService.get().setHost("192.168.1.213");
+//        RpcClientService.get().setHost("192.168.1.39");
+        RpcClientService.get().setHost("127.0.0.1");
         RpcClientService.get().setPort(7788);
         RpcClientService.get().setBucketId("appExample");
         RpcClientService.get().setClientId(UUID.randomUUID().toString());
-        RpcClientService.get().setSchedulerDelay(1000);
 
         RpcClientService.get().registerFunction(new FunctionReact("getSign", ReqMethod.POST) {
             @Override
@@ -35,7 +35,7 @@ public class TestClazz {
                     deferredTask.getDeferredObject().resolve("异步调用成功了！！！");
             }
         });
-        RpcClientService.get().start_connect();
+        RpcClientService.get().activate();
 
     }
 }

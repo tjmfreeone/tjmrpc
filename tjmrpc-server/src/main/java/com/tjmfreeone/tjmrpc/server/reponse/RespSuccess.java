@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 
 @Data
-public class RespSuccess implements RespStatus {
+public class RespSuccess extends RespStatus {
     private String code = "0000";
     private String status = "success";
 

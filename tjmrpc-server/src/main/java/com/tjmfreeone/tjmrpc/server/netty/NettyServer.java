@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit;
 
 
 @Component
-public class Server {
+public class NettyServer {
     private final static NioEventLoopGroup boss = new NioEventLoopGroup(1);
     private final static NioEventLoopGroup worker = new NioEventLoopGroup();
 
@@ -40,7 +40,7 @@ public class Server {
 
                     ch.pipeline().addLast(new WebSocketServerProtocolHandler("/tjmrpc/websocket", null, false, 65536 * 20));
                     ch.pipeline().addLast(new IdleStateHandler(10, 0, 0, TimeUnit.SECONDS));
-                    ch.pipeline().addLast(new ServerHandler());
+                    ch.pipeline().addLast(new NettyServerHandler());
                 }
             });
             ChannelFuture channelFuture = serverBootstrap.bind(port).sync();

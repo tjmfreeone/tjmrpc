@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 
 @Data
-public class RespError implements RespStatus {
+public class RespError extends RespStatus {
     private String code = "1001";
     private String status = "error";
     private String reason = "unknown";
@@ -20,9 +20,5 @@ public class RespError implements RespStatus {
     public RespError(String reason, String clientId){
         this.reason = reason;
         this.clientId = clientId;
-    }
-
-    public RespError(){
-
     }
 }

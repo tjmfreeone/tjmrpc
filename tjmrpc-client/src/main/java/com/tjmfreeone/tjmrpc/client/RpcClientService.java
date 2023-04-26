@@ -4,7 +4,7 @@ import com.tjmfreeone.tjmrpc.client.connection.ConnStatus;
 import com.tjmfreeone.tjmrpc.client.common.Function;
 import com.tjmfreeone.tjmrpc.client.connection.IConnStatusListener;
 import com.tjmfreeone.tjmrpc.client.message.send.InitMsg;
-import com.tjmfreeone.tjmrpc.client.netty.Client;
+import com.tjmfreeone.tjmrpc.client.netty.NettyClient;
 
 import java.net.URI;
 import java.util.LinkedList;
@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
@@ -28,7 +27,6 @@ import static com.tjmfreeone.tjmrpc.client.common.TheObjectMapper.OBJECT_MAPPER;
 public class RpcClientService {
     private static volatile RpcClientService INSTANCE;
 
-
     @NonNull
     private String host;
     @NonNull
@@ -39,23 +37,45 @@ public class RpcClientService {
     private String clientId;
 
     @NonNull
-    private Channel channel;
+    private static volatile Map<String, Function> functions;
 
     @Getter
-    private ConnStatus connStatus;
+    private ConnStatus connStatus = ConnStatus.OFF_LINE;
 
     private List<IConnStatusListener> connStatusListeners = new LinkedList<>();
 
-    @NonNull
-    private static volatile Map<String, Function> functions;
 
-    public boolean hasInited = false;
+    private NettyClient nettyClient;
+
+
+    private boolean isInited = false;
+
+    private boolean isActivate = false;
+
+    public URI getUri(){
+        return URI.create("ws://" + host + ":" + port + "/tjmrpc/websocket");
+    }
 
     private RpcClientService(){
         if(INSTANCE!=null){
             throw new RuntimeException("单例已被创建"); // 防止反射破坏
         }
     }
+
+    public void activate(){
+        isActivate = true;
+        nettyClient = new NettyClient(host, port, getUri(), 1000L);
+        nettyClient.prepare4connect();
+        nettyClient.loopRunConnect();
+    }
+
+    public void deactivate(){
+        isActivate = false;
+        nettyClient.stopLoopConnect();
+        this.setConnStatus(ConnStatus.OFF_LINE);
+        this.resetInitState();
+    }
+
 
     public static RpcClientService get(){
         if(INSTANCE==null){
@@ -72,7 +92,7 @@ public class RpcClientService {
 
     public void registerFunction(Function function){
         functions.put(function.getFunctionId(), function);
-        this.hasInited = false;
+        this.isInited = false;
     }
 
     public void unregisterFunction(Function function){
@@ -83,11 +103,6 @@ public class RpcClientService {
         return functions.getOrDefault(functionId, null);
     }
 
-    public void setSchedulerDelay(long scheduler_delay){
-        if(scheduler_delay>0) {
-            Client.setDELAY(scheduler_delay);
-        }
-    }
 
     public void addConnStatusListener(IConnStatusListener listener){
         if(!connStatusListeners.contains(listener)){
@@ -95,9 +110,14 @@ public class RpcClientService {
         }
     }
 
+    public void clearConnStatusListener(){
+        connStatusListeners.clear();
+    }
+
     public void setConnStatus(ConnStatus status){
         this.connStatus = status;
         notifyStatus(status);
+        System.out.println("ConnStatusChange:"+status);
     }
 
     public void notifyStatus(ConnStatus status){
@@ -106,10 +126,6 @@ public class RpcClientService {
         }
     }
 
-    public void start_connect(){
-        URI uri = URI.create("ws://" + host + ":" + port + "/tjmrpc/websocket");
-        Client.spawn(uri);
-    }
 
     public void sendInitMsg() throws Exception{
         InitMsg initMsg = new InitMsg();
@@ -117,26 +133,24 @@ public class RpcClientService {
         initMsg.setClientId(clientId);
         initMsg.setFunctions(functions);
         log.info(initMsg.toString());
-        ChannelFuture channelFuture = channel.writeAndFlush(new TextWebSocketFrame(OBJECT_MAPPER.writeValueAsString(initMsg)));
+        ChannelFuture channelFuture = nettyClient.getChannel().writeAndFlush(new TextWebSocketFrame(OBJECT_MAPPER.writeValueAsString(initMsg)));
         channelFuture.sync();
         channelFuture.addListener(new ChannelFutureListener() {
             @Override
             public void operationComplete(ChannelFuture future) throws Exception {
                 log.info("发送成功！！");
-                hasInited = true;
+                isInited = true;
             }
         });
     }
 
-    public void close(){
-        try {
-            channel.close().sync();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-        Client.stop();
-        hasInited = false;
-        this.setConnStatus(ConnStatus.OFF_LINE);
+
+    public void resetInitState(){
+        isInited = false;
+    }
+
+    public boolean hasInited(){
+        return isInited;
     }
 
 }

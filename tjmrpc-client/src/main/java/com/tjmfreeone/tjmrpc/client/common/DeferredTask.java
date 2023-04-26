@@ -40,7 +40,7 @@ public class DeferredTask {
             public void onDone(Object o) {
                 invokeResponse.setSuccess(o);
                 DeferredTaskManager.get().removeAnyway(id);
-                RpcClientService.get().getChannel().writeAndFlush(new TextWebSocketFrame(OBJECT_MAPPER.writeValueAsString(invokeResponse))).sync();
+                RpcClientService.get().getNettyClient().getChannel().writeAndFlush(new TextWebSocketFrame(OBJECT_MAPPER.writeValueAsString(invokeResponse))).sync();
             }
         }).fail(new FailCallback() {
             @SneakyThrows
@@ -48,11 +48,9 @@ public class DeferredTask {
             public void onFail(Object o) {
                 invokeResponse.setFail(o);
                 DeferredTaskManager.get().removeAnyway(id);
-                RpcClientService.get().getChannel().writeAndFlush(new TextWebSocketFrame(OBJECT_MAPPER.writeValueAsString(invokeResponse))).sync();
-
+                RpcClientService.get().getNettyClient().getChannel().writeAndFlush(new TextWebSocketFrame(OBJECT_MAPPER.writeValueAsString(invokeResponse))).sync();
             }
         });
-
     }
 
     public boolean isFinished(){

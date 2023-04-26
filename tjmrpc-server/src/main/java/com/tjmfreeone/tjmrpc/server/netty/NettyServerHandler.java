@@ -30,7 +30,7 @@ import static com.tjmfreeone.tjmrpc.server.common.TheObjectMapper.*;
 
 @Slf4j
 @ChannelHandler.Sharable
-public class ServerHandler extends SimpleChannelInboundHandler<TextWebSocketFrame> {
+public class NettyServerHandler extends SimpleChannelInboundHandler<TextWebSocketFrame> {
 
     private AttributeKey<String> bucketIdKey = AttributeKey.valueOf("bucketId");
     private AttributeKey<String> clientIdKey = AttributeKey.valueOf("clientId");
@@ -100,10 +100,8 @@ public class ServerHandler extends SimpleChannelInboundHandler<TextWebSocketFram
                         deferredResult.setResult(new RespError("unknown"));
                         break;
                 }
-
             }
         }
-
     }
 
     @Override

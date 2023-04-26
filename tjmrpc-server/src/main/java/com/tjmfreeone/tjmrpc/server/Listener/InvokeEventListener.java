@@ -39,18 +39,21 @@ public class InvokeEventListener {
         String functionId = invokeEvent.getFunctionId();
         String clientId = invokeEvent.getClientId();
         Map<String, String> paramKeyValues = invokeEvent.getParamKeyValues();
+        RpcBucket rpcBucket = RpcContainerManager.get().getBucketById(bucketId);
+
         JsonNode invokeBody = invokeEvent.getInvokeBody();
 
-        if(!RpcContainerManager.get().containsBucket(bucketId)){
+
+        if(rpcBucket==null){
             deferredResult.setResult(new RespError("no such bucketId"));
             return;
         }
-        if(!RpcContainerManager.get().getBucketById(bucketId).containsFunction(functionId)){
+        if(!rpcBucket.containsFunction(functionId)){
             deferredResult.setResult(new RespError("no such functionId in bucket " + bucketId));
             return;
         }
 
-        if(RpcContainerManager.get().getBucketById(bucketId).getFunction(functionId).getReqMethod().equals(ReqMethod.POST) && invokeBody==null){
+        if(rpcBucket.getFunction(functionId).getReqMethod().equals(ReqMethod.POST) && invokeBody==null){
             deferredResult.setResult(new RespError("found post body equals to null, please retry."));
             return;
         }
@@ -60,7 +63,6 @@ public class InvokeEventListener {
             return;
         }
 
-        RpcBucket rpcBucket = RpcContainerManager.get().getBucketById(bucketId);
         RpcClient rpcClient = clientId!=null? rpcBucket.getTargetRpcClient(clientId): rpcBucket.loopGetRpcClient();
         if(rpcClient==null){
             deferredResult.setResult(new RespError("client not found."));

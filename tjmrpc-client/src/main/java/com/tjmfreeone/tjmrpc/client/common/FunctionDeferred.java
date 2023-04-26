@@ -7,8 +7,8 @@ import lombok.*;
 @Setter
 @Getter
 @AllArgsConstructor
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
-public abstract class FunctionDeferred implements Function{
+@EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = true)
+public abstract class FunctionDeferred extends Function{
 
     @EqualsAndHashCode.Include()
     @NonNull

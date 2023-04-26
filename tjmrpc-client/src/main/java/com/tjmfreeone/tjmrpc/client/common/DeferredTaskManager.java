@@ -1,3 +1,6 @@
+/*
+* 支持在客户端构建异步任务，触发请求跟接收结果凭taskId关联
+* */
 package com.tjmfreeone.tjmrpc.client.common;
 
 
@@ -34,7 +37,6 @@ public class DeferredTaskManager {
         }
         return INSTANCE;
     }
-
 
     public void addTask(DeferredTask deferredTask){
         map.put(deferredTask.getId(), deferredTask);

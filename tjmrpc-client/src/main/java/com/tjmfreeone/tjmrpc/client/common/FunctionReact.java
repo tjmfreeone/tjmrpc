@@ -9,8 +9,8 @@ import lombok.*;
 @Setter
 @Getter
 @AllArgsConstructor
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
-public abstract class FunctionReact implements Function{
+@EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = true)
+public abstract class FunctionReact extends Function{
 
     @EqualsAndHashCode.Include()
     @NonNull

@@ -1,13 +1,13 @@
 package com.tjmfreeone.tjmrpc.client.common;
 
 
-public interface Function {
+public abstract class Function {
 
     String functionId = null;
 
     ReqMethod REQ_METHOD = null;
 
-     String getFunctionId();
+     public abstract String getFunctionId();
 
-     ReqMethod getReqMethod();
+     public abstract ReqMethod getReqMethod();
 }

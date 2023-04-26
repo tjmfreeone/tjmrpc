@@ -2,6 +2,7 @@ package com.tjmfreeone.tjmrpc.client.netty;
 
 import com.tjmfreeone.tjmrpc.client.RpcClientService;
 import com.tjmfreeone.tjmrpc.client.common.*;
+import com.tjmfreeone.tjmrpc.client.connection.ConnStatus;
 import com.tjmfreeone.tjmrpc.client.message.BaseMsg;
 import com.tjmfreeone.tjmrpc.client.message.MsgType;
 import com.tjmfreeone.tjmrpc.client.message.recv.InvokeRequest;
@@ -21,7 +22,7 @@ import static com.tjmfreeone.tjmrpc.client.common.TheObjectMapper.*;
 
 @Slf4j
 @ChannelHandler.Sharable
-public class ClientHandler extends SimpleChannelInboundHandler<TextWebSocketFrame> {
+public class NettyClientHandler extends SimpleChannelInboundHandler<TextWebSocketFrame> {
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
@@ -30,8 +31,8 @@ public class ClientHandler extends SimpleChannelInboundHandler<TextWebSocketFram
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        RpcClientService.get().hasInited = false;
-        Client.connect();
+        RpcClientService.get().resetInitState();
+        RpcClientService.get().setConnStatus(ConnStatus.OFF_LINE);
     }
 
 
@@ -54,7 +55,7 @@ public class ClientHandler extends SimpleChannelInboundHandler<TextWebSocketFram
                     } catch (Exception e){
                         invokeResponse.setFail(e.toString());
                     }
-                    RpcClientService.get().getChannel().writeAndFlush(new TextWebSocketFrame(OBJECT_MAPPER.writeValueAsString(invokeResponse))).sync();
+                    RpcClientService.get().getNettyClient().getChannel().writeAndFlush(new TextWebSocketFrame(OBJECT_MAPPER.writeValueAsString(invokeResponse))).sync();
 
                 } else if (function instanceof FunctionDeferred){
                     FunctionDeferred targetFunction = (FunctionDeferred) function;
@@ -63,7 +64,7 @@ public class ClientHandler extends SimpleChannelInboundHandler<TextWebSocketFram
                         InvokeResponse invokeResponse = new InvokeResponse();
                         invokeResponse.setRequestId(invokeRequest.getRequestId());
                         invokeResponse.setFail("calling deferred function, but missing parameter: taskId");
-                        RpcClientService.get().getChannel().writeAndFlush(new TextWebSocketFrame(OBJECT_MAPPER.writeValueAsString(invokeResponse))).sync();
+                        RpcClientService.get().getNettyClient().getChannel().writeAndFlush(new TextWebSocketFrame(OBJECT_MAPPER.writeValueAsString(invokeResponse))).sync();
                         return;
                     }
                     DeferredTask deferredTask = new DeferredTask(taskId, invokeRequest.getRequestId());
@@ -83,7 +84,7 @@ public class ClientHandler extends SimpleChannelInboundHandler<TextWebSocketFram
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
         if(evt instanceof IdleStateEvent){
             IdleStateEvent idleStateEvent = (IdleStateEvent) evt;
-            if(IdleState.READER_IDLE.equals(idleStateEvent.state()) && !RpcClientService.get().hasInited){
+            if(IdleState.READER_IDLE.equals(idleStateEvent.state()) && !RpcClientService.get().hasInited()){
                 RpcClientService.get().sendInitMsg();
             }
             if(IdleState.WRITER_IDLE.equals(idleStateEvent.state())){
@@ -99,7 +100,9 @@ public class ClientHandler extends SimpleChannelInboundHandler<TextWebSocketFram
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        log.warn("异常发生:"+ cause);
+        log.warn("异常发生:"+ cause.getMessage());
         ctx.close();
+        RpcClientService.get().resetInitState();
+        RpcClientService.get().setConnStatus(ConnStatus.OFF_LINE);
     }
 }

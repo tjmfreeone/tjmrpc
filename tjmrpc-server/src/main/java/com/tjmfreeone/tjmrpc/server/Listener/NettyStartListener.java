@@ -1,6 +1,6 @@
 package com.tjmfreeone.tjmrpc.server.Listener;
 
-import com.tjmfreeone.tjmrpc.server.netty.Server;
+import com.tjmfreeone.tjmrpc.server.netty.NettyServer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
@@ -12,14 +12,14 @@ import javax.annotation.Resource;
 @Component
 public class NettyStartListener implements ApplicationRunner {
     @Resource
-    private Server server;
+    private NettyServer nettyServer;
 
     @Value("${ws-port}")
     Integer port;
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
-        this.server.start(port);
+        this.nettyServer.start(port);
     }
 
 }
