@@ -9,6 +9,7 @@ import com.tjmfreeone.tjmrpc.server.message.BaseMsg;
 import com.tjmfreeone.tjmrpc.server.message.recv.InitMsg;
 import com.tjmfreeone.tjmrpc.server.message.recv.InvokeResponse;
 import com.tjmfreeone.tjmrpc.server.message.MsgType;
+import com.tjmfreeone.tjmrpc.server.message.send.AckInitMsg;
 import com.tjmfreeone.tjmrpc.server.message.send.Pong;
 import com.tjmfreeone.tjmrpc.server.reponse.RespError;
 import com.tjmfreeone.tjmrpc.server.reponse.RespStatus;
@@ -81,6 +82,7 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<TextWebSocke
                     rpcBucket.registerFunction(function);
                 }
             }
+            ctx.channel().writeAndFlush(new TextWebSocketFrame(OBJECT_MAPPER.writeValueAsString(new AckInitMsg()))).sync();
         }else if(baseMsg.getMsgType().equals(MsgType.InvokeResponse)){
             InvokeResponse invokeResult = (InvokeResponse) baseMsg;
             String requestId = invokeResult.getRequestId();

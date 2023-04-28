@@ -31,7 +31,7 @@ public class NettyClientHandler extends SimpleChannelInboundHandler<TextWebSocke
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        RpcClientService.get().resetInitState();
+        RpcClientService.get().setInitState(false);
         RpcClientService.get().setConnStatus(ConnStatus.OFF_LINE);
     }
 
@@ -77,6 +77,10 @@ public class NettyClientHandler extends SimpleChannelInboundHandler<TextWebSocke
                 }
             }
         }
+        else if (baseMsg.getMsgType() == MsgType.AckInitMsg) {
+            RpcClientService.get().setInitState(true);
+            RpcClientService.get().setConnStatus(ConnStatus.ON_LINE);
+        }
         ctx.flush();
     }
 
@@ -102,7 +106,7 @@ public class NettyClientHandler extends SimpleChannelInboundHandler<TextWebSocke
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         log.warn("异常发生:"+ cause.getMessage());
         ctx.close();
-        RpcClientService.get().resetInitState();
+        RpcClientService.get().setInitState(false);
         RpcClientService.get().setConnStatus(ConnStatus.OFF_LINE);
     }
 }

@@ -8,6 +8,7 @@ import com.tjmfreeone.tjmrpc.server.message.BaseMsg;
 import com.tjmfreeone.tjmrpc.server.message.recv.InitMsg;
 import com.tjmfreeone.tjmrpc.server.message.recv.InvokeResponse;
 import com.tjmfreeone.tjmrpc.server.message.recv.Ping;
+import com.tjmfreeone.tjmrpc.server.message.send.AckInitMsg;
 import com.tjmfreeone.tjmrpc.server.message.send.InvokeRequest;
 import com.tjmfreeone.tjmrpc.server.message.send.Pong;
 
@@ -25,6 +26,7 @@ public class TheObjectMapper {
         OBJECT_MAPPER.setSerializationInclusion(JsonInclude.Include.NON_NULL);
 
         OBJECT_MAPPER.addMixIn(BaseMsg.class, InitMsg.class);
+        OBJECT_MAPPER.addMixIn(BaseMsg.class, AckInitMsg.class);
         OBJECT_MAPPER.addMixIn(BaseMsg.class, Ping.class);
         OBJECT_MAPPER.addMixIn(BaseMsg.class, Pong.class);
         OBJECT_MAPPER.addMixIn(BaseMsg.class, InvokeRequest.class);

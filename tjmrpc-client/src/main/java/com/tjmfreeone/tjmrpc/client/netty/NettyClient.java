@@ -1,5 +1,6 @@
 package com.tjmfreeone.tjmrpc.client.netty;
 
+import ch.qos.logback.classic.util.LoggerNameUtil;
 import com.tjmfreeone.tjmrpc.client.RpcClientService;
 
 import java.net.URI;
@@ -59,7 +60,6 @@ public class NettyClient {
                 pipeline.addLast(new WebSocketClientProtocolHandler(WebSocketClientHandshakerFactory.newHandshaker(
                         uri, WebSocketVersion.V13, null, false, new DefaultHttpHeaders()
                 )));
-                log.info(uri+"####");
                 pipeline.addLast(new IdleStateHandler(1, 5,0, TimeUnit.SECONDS));
                 pipeline.addLast(new NettyClientHandler());
             }
@@ -91,7 +91,6 @@ public class NettyClient {
                             public void operationComplete(ChannelFuture future) throws Exception {
                                 if(future.isSuccess()){
                                     log.info("连接成功！");
-                                    RpcClientService.get().setConnStatus(ConnStatus.ON_LINE);
 
                                 } else {
                                     log.warn("连接失败, "+retryConnectDelay+"ms后重试");
@@ -112,10 +111,6 @@ public class NettyClient {
     }
 
     public void stopLoopConnect(){
-        try {
-            worker.shutdownGracefully().sync();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+        worker.shutdownGracefully();
     }
 }

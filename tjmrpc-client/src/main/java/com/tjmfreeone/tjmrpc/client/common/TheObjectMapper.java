@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.tjmfreeone.tjmrpc.client.message.BaseMsg;
+import com.tjmfreeone.tjmrpc.client.message.recv.AckInitMsg;
 import com.tjmfreeone.tjmrpc.client.message.recv.InvokeRequest;
 import com.tjmfreeone.tjmrpc.client.message.recv.Pong;
 import com.tjmfreeone.tjmrpc.client.message.send.InitMsg;
@@ -24,6 +25,7 @@ public class TheObjectMapper {
         OBJECT_MAPPER.setSerializationInclusion(JsonInclude.Include.NON_NULL);
 
         OBJECT_MAPPER.addMixIn(BaseMsg.class, InitMsg.class);
+        OBJECT_MAPPER.addMixIn(BaseMsg.class, AckInitMsg.class);
         OBJECT_MAPPER.addMixIn(BaseMsg.class, Ping.class);
         OBJECT_MAPPER.addMixIn(BaseMsg.class, Pong.class);
         OBJECT_MAPPER.addMixIn(BaseMsg.class, InvokeRequest.class);

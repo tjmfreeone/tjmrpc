@@ -64,6 +64,10 @@ public class RpcClientService {
 
     public void activate(){
         isActivate = true;
+//        if(nettyClient!=null){
+//            nettyClient.stopLoopConnect();
+//            nettyClient = null;
+//        }
         nettyClient = new NettyClient(host, port, getUri(), 1000L);
         nettyClient.prepare4connect();
         nettyClient.loopRunConnect();
@@ -72,8 +76,9 @@ public class RpcClientService {
     public void deactivate(){
         isActivate = false;
         nettyClient.stopLoopConnect();
+//        nettyClient = null;
         this.setConnStatus(ConnStatus.OFF_LINE);
-        this.resetInitState();
+        this.setInitState(false);
     }
 
 
@@ -139,14 +144,13 @@ public class RpcClientService {
             @Override
             public void operationComplete(ChannelFuture future) throws Exception {
                 log.info("发送成功！！");
-                isInited = true;
             }
         });
     }
 
 
-    public void resetInitState(){
-        isInited = false;
+    public void setInitState(boolean state){
+        isInited = state;
     }
 
     public boolean hasInited(){

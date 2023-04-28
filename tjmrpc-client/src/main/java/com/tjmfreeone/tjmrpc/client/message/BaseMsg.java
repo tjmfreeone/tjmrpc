@@ -2,6 +2,7 @@ package com.tjmfreeone.tjmrpc.client.message;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.tjmfreeone.tjmrpc.client.message.recv.AckInitMsg;
 import com.tjmfreeone.tjmrpc.client.message.recv.InvokeRequest;
 import com.tjmfreeone.tjmrpc.client.message.recv.Pong;
 import com.tjmfreeone.tjmrpc.client.message.send.InitMsg;
@@ -18,6 +19,7 @@ import lombok.ToString;
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "msgType", visible = true)
 @JsonSubTypes(value = {
         @JsonSubTypes.Type(value = InitMsg.class, name = "InitMsg"),
+        @JsonSubTypes.Type(value = AckInitMsg.class, name = "AckInitMsg"),
         @JsonSubTypes.Type(value = InvokeResponse.class, name = "InvokeResponse"),
         @JsonSubTypes.Type(value = InvokeRequest.class, name = "InvokeRequest"),
         @JsonSubTypes.Type(value = Ping.class, name = "Ping"),
